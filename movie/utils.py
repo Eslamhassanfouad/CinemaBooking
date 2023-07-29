@@ -38,7 +38,6 @@ def get_movie_data_from_tmdb():
                     trailer_url=trailer_url
                 )
 
-            # Create or update categories based on the genre IDs
             genre_ids = movie_data.get("genre_ids", [])
             categories = []
 
@@ -50,11 +49,9 @@ def get_movie_data_from_tmdb():
                     category, _ = Category.objects.get_or_create(name=category_name)
                     categories.append(category)
 
-            # Set the movie's categories
             if categories:
                 movie.category.set(categories)
 
-        # If the movie has no associated categories, set a default category (optional)
         default_category_name = "Uncategorized"
         default_category, _ = Category.objects.get_or_create(name=default_category_name)
         Movie.objects.filter(category__isnull=True).update(category=default_category)
@@ -90,5 +87,4 @@ def get_trailer_url(movie_id):
             if video_data["type"] == "Trailer" and video_data["site"] == "YouTube":
                 return f"https://www.youtube.com/watch?v={video_data['key']}"
 
-    # Return an empty string if no trailer is found or there is an issue with the API response
     return ""
