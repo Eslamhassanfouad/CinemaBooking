@@ -10,7 +10,6 @@ class MovieListCreateView(generics.ListCreateAPIView):
     serializer_class = MovieSerializer
 
     def get_queryset(self):
-        get_movie_data_from_tmdb()
         return Movie.objects.all()
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()

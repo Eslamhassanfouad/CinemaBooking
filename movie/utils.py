@@ -1,5 +1,6 @@
 import requests
 from .models import Movie, Category
+from .serializers import MovieSerializer
 
 
 def get_movie_data_from_tmdb():
@@ -59,6 +60,11 @@ def get_movie_data_from_tmdb():
             else:
                 default_category, _ = Category.objects.get_or_create(name=default_category_name)
                 movie.category.set([default_category])
+            movie_serializer = MovieSerializer(data=movie_data)
+            if movie_serializer.is_valid():
+                movie_serializer.save()
+            else:
+                print(f"Error while saving movie {title}: {movie_serializer.errors}")
 
 
 def get_category_data_from_tmdb(category_id):
