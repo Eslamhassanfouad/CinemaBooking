@@ -1,0 +1,37 @@
+Index: movie/utils.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import requests\nfrom .models import Movie, Category\nfrom .serializers import MovieSerializer\n\n\ndef get_movie_data_from_tmdb():\n    api_key = \"f92e6b2af79cfebefa731edaf2f6fec1\"\n    base_url = \"https://api.themoviedb.org/3/movie/popular\"\n\n    params = {\n        \"api_key\": api_key\n    }\n\n    response = requests.get(base_url, params=params)\n    data = response.json()\n\n    if data.get(\"results\"):\n        movies_data = data[\"results\"]\n\n        for movie_data in movies_data:\n            title = movie_data[\"title\"]\n            description = movie_data[\"overview\"]\n            poster_path = f\"https://image.tmdb.org/t/p/w500{movie_data['poster_path']}\"\n            trailer_url = get_trailer_url(movie_data[\"id\"])\n\n            print(f\"Title: {title}\")\n            print(f\"Poster URL: {poster_path}\")\n            print(f\"Trailer URL: {trailer_url}\")\n\n            try:\n                movie = Movie.objects.get(title=title)\n            except Movie.DoesNotExist:\n                movie = Movie.objects.create(\n                    title=title,\n                    description=description,\n                    poster_path=poster_path,\n                    trailer_url=trailer_url\n                )\n\n            genre_ids = movie_data.get(\"genre_ids\", [])\n            categories = []\n\n            for genre_id in genre_ids:\n                category_data = get_category_data_from_tmdb(genre_id)\n                category_name = category_data.get(\"name\")\n\n                print(f\"Genre ID: {genre_id}\")\n                print(f\"Category Name: {category_name}\")\n\n                if category_name:\n                    category, _ = Category.objects.get_or_create(name=category_name)\n                    categories.append(category)\n\n            if categories:\n                movie.category.set(categories)\n\n            default_category_name = \"Uncategorized\"\n            if categories:\n                movie.category.set(categories)\n            else:\n                default_category, _ = Category.objects.get_or_create(name=default_category_name)\n                movie.category.set([default_category])\n            movie_serializer = MovieSerializer(data=movie_data)\n            if movie_serializer.is_valid():\n                movie_serializer.save()\n            else:\n                print(f\"Error while saving movie {title}: {movie_serializer.errors}\")\n\n\ndef get_category_data_from_tmdb(category_id):\n    api_key = \"f92e6b2af79cfebefa731edaf2f6fec1\"\n    base_url = \"https://api.themoviedb.org/3/genre/movie/list\"\n\n    params = {\n        \"api_key\": api_key\n    }\n\n    response = requests.get(base_url, params=params)\n    data = response.json()\n\n    if data.get(\"genres\"):\n        genres = data[\"genres\"]\n        for genre in genres:\n            if genre[\"id\"] == category_id:\n                return {\"name\": genre[\"name\"]}\n\n    return {\"name\": \"Uncategorized\"}\n\n\ndef get_trailer_url(movie_id):\n    api_key = \"f92e6b2af79cfebefa731edaf2f6fec1\"\n    base_url = f\"https://api.themoviedb.org/3/movie/{movie_id}/videos\"\n\n    params = {\n        \"api_key\": api_key\n    }\n\n    response = requests.get(base_url, params=params)\n    data = response.json()\n\n    if data.get(\"results\"):\n        for video_data in data[\"results\"]:\n            if video_data[\"type\"] == \"Trailer\" and video_data[\"site\"] == \"YouTube\":\n                return f\"https://www.youtube.com/watch?v={video_data['key']}\"\n\n    return \"\"
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/movie/utils.py b/movie/utils.py
+--- a/movie/utils.py	(revision 5bd9f5320c72f1dba57e6be3cd7aa3a0f36633c3)
++++ b/movie/utils.py	(date 1690754232682)
+@@ -29,6 +29,8 @@
+ 
+             try:
+                 movie = Movie.objects.get(title=title)
++                print(f"Movie '{title}' already exists. Skipping...")
++                continue
+             except Movie.DoesNotExist:
+                 movie = Movie.objects.create(
+                     title=title,
+Index: movie/views.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># cinema_booking_system/views.py\nfrom rest_framework import generics\nfrom .models import Category, Movie\nfrom .serializers import CategorySerializer, MovieSerializer\nfrom .utils import get_movie_data_from_tmdb\nfrom .permissions import IsAdminOrReadOnly\n\nclass MovieListCreateView(generics.ListCreateAPIView):\n    queryset = Movie.objects.all()\n    serializer_class = MovieSerializer\n\n    def get_queryset(self):\n        get_movie_data_from_tmdb()\n        return Movie.objects.all()\nclass CategoryListCreateView(generics.ListCreateAPIView):\n    queryset = Category.objects.all()\n    serializer_class = CategorySerializer
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/movie/views.py b/movie/views.py
+--- a/movie/views.py	(revision 5bd9f5320c72f1dba57e6be3cd7aa3a0f36633c3)
++++ b/movie/views.py	(date 1690754088200)
+@@ -10,7 +10,6 @@
+     serializer_class = MovieSerializer
+ 
+     def get_queryset(self):
+-        get_movie_data_from_tmdb()
+         return Movie.objects.all()
+ class CategoryListCreateView(generics.ListCreateAPIView):
+     queryset = Category.objects.all()
