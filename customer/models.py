@@ -12,7 +12,6 @@ class Customer(AbstractUser):
         message="Please enter a valid Egyptian phone number"
     )
     phone = models.CharField(validators=[phone_regex], max_length=11, blank=False)    
-    age=models.PositiveIntegerField(blank=False)
     
     groups = models.ManyToManyField(
         'auth.Group',

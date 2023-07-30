@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'customer',
     'hall',
     'movie',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware'
+]
+CORS_ORIGIN_WHITELIST = [
+'http://localhost:3000'
 ]
 
 ROOT_URLCONF = 'cinema.urls'
@@ -85,6 +91,8 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL='customer.Customer'
+
+
 REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -92,6 +100,7 @@ REST_FRAMEWORK = {
         
     )
 }
+
 from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=200),
