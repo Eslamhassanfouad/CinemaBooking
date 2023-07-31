@@ -1,6 +1,5 @@
 import requests
 from .models import Movie, Category
-from .serializers import MovieSerializer
 
 
 def get_movie_data_from_tmdb():
@@ -22,19 +21,18 @@ def get_movie_data_from_tmdb():
             description = movie_data["overview"]
             poster_path = f"https://image.tmdb.org/t/p/w500{movie_data['poster_path']}"
             trailer_url = get_trailer_url(movie_data["id"])
-
-            print(f"Title: {title}")
-            print(f"Poster URL: {poster_path}")
-            print(f"Trailer URL: {trailer_url}")
+            rating = movie_data.get("vote_average", None)
 
             try:
                 movie = Movie.objects.get(title=title)
+
             except Movie.DoesNotExist:
                 movie = Movie.objects.create(
                     title=title,
                     description=description,
                     poster_path=poster_path,
-                    trailer_url=trailer_url
+                    trailer_url=trailer_url,
+                    rating=rating
                 )
 
             genre_ids = movie_data.get("genre_ids", [])
@@ -43,9 +41,6 @@ def get_movie_data_from_tmdb():
             for genre_id in genre_ids:
                 category_data = get_category_data_from_tmdb(genre_id)
                 category_name = category_data.get("name")
-
-                print(f"Genre ID: {genre_id}")
-                print(f"Category Name: {category_name}")
 
                 if category_name:
                     category, _ = Category.objects.get_or_create(name=category_name)
@@ -60,11 +55,6 @@ def get_movie_data_from_tmdb():
             else:
                 default_category, _ = Category.objects.get_or_create(name=default_category_name)
                 movie.category.set([default_category])
-            movie_serializer = MovieSerializer(data=movie_data)
-            if movie_serializer.is_valid():
-                movie_serializer.save()
-            else:
-                print(f"Error while saving movie {title}: {movie_serializer.errors}")
 
 
 def get_category_data_from_tmdb(category_id):
