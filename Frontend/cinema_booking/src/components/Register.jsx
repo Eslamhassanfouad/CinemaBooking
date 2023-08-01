@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../media/logo.png"
+
 
 
 const schema=Yup.object().shape({
@@ -65,10 +65,14 @@ export  function Register() {
 
       console.log(errors);
   return (
-    <div  >
-          <img className='d-flex' src={logo} style={{width:'150px',height:'92px',marginLeft:'10px'}}/>
-          <Form onSubmit={handleSubmit(Submit)} style={{flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center'}} className='d-flex'>
-      <h2>Sign Up</h2>
+    <div style={{backgroundColor:'#212529',color:'white',height:'100vh'} } >
+        <div className='d-flex  align-items-center' style={{backgroundColor:'#212529',height:'80px',justifyContent:'flex-start'}}>
+        <h3  style={{color:'white',fontFamily:'sans-serif',fontWeight:'bolder',margin:'0',marginLeft:'20px'}}><span style={{color:'#ffa500'}}>HOT</span>FLIX</h3>
+
+
+      </div>
+          <Form onSubmit={handleSubmit(Submit)} style={{flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',border:'2px solid #ffa500 ',margin:'20px'}} className='d-flex'>
+      <h2 style={{marginTop:'10px',fontFamily:'sans-serif'}}>Sign Up</h2>
       <Form.Group className="mb-3 mt-3" controlId="formBasicEmail">
         <Form.Label>Email address</Form.Label>
         <Form.Control style={{textAlign:'center'}} type="email" placeholder="Enter email"
